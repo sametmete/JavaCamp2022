@@ -5,15 +5,17 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import kodlama.io.kodlama.io.dev.business.abstracts.LanguageService;
-import kodlama.io.kodlama.io.dev.entities.concretes.Language;
+import kodlama.io.kodlama.io.dev.business.requests.languageRequests.CreateLanguageRequest;
+import kodlama.io.kodlama.io.dev.business.requests.languageRequests.DeleteLanguageRequest;
+import kodlama.io.kodlama.io.dev.business.requests.languageRequests.UpdateLanguageRequest;
+import kodlama.io.kodlama.io.dev.business.responses.languageResponse.GetAllLanguageResponse;
+import kodlama.io.kodlama.io.dev.business.responses.languageResponse.GetByIdLanguageResponse;
 
 @RestController
 @RequestMapping("/api/languages")
@@ -27,24 +29,24 @@ public class LanguagesController {
 		this.languageService = languageService;
 	}
 	@PostMapping("/add")
-	public void add(Language language) throws Exception {
-		languageService.add(language);
+	public void add(CreateLanguageRequest createLanguageRequest) {
+		languageService.add(createLanguageRequest);
 	}
 	@PutMapping("/update")
-	public void update(Language language) throws Exception {
-		languageService.update(language);
+	public void update(int id,UpdateLanguageRequest updateLanguageRequest) {
+		languageService.update(id,updateLanguageRequest);
 	}
 	@DeleteMapping("/delete")
-	public void delete(@RequestParam int id) throws Exception {
-		languageService.delete(id);
+	public void delete(DeleteLanguageRequest deleteLanguageRequest) {
+		languageService.delete(deleteLanguageRequest);
 	}
 	@GetMapping("/{id}")
-	public Language getById(@PathVariable int id) {
+	public GetByIdLanguageResponse getById(int id) {
 		return languageService.getById(id);
 	}
 	
 	@GetMapping("/getall")
-	public List<Language> getAll(){
+	public List<GetAllLanguageResponse> getAll(){
 		return languageService.getAll();
 	}
 }

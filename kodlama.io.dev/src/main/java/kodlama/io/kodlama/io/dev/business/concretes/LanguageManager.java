@@ -1,11 +1,17 @@
 package kodlama.io.kodlama.io.dev.business.concretes;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import kodlama.io.kodlama.io.dev.business.abstracts.LanguageService;
+import kodlama.io.kodlama.io.dev.business.requests.languageRequests.CreateLanguageRequest;
+import kodlama.io.kodlama.io.dev.business.requests.languageRequests.DeleteLanguageRequest;
+import kodlama.io.kodlama.io.dev.business.requests.languageRequests.UpdateLanguageRequest;
+import kodlama.io.kodlama.io.dev.business.responses.languageResponse.GetAllLanguageResponse;
+import kodlama.io.kodlama.io.dev.business.responses.languageResponse.GetByIdLanguageResponse;
 import kodlama.io.kodlama.io.dev.dataAccess.abstracts.LanguageRepository;
 import kodlama.io.kodlama.io.dev.entities.concretes.Language;
 
@@ -16,58 +22,83 @@ public class LanguageManager implements LanguageService {
 
 	@Autowired
 	public LanguageManager(LanguageRepository languageRepository) {
-		super();
+
 		this.languageRepository = languageRepository;
 	}
 
 	@Override
-	public List<Language> getAll() {
+	public List<GetAllLanguageResponse> getAll() {
 
-		return languageRepository.getAll();
-	}
-
-	@Override
-	public void add(Language language) throws Exception {
-		if (language.getName() != null) {
-			for (Language lan : languageRepository.getAll()) {
-				if (lan.getName().equalsIgnoreCase(language.getName())) {
-					throw new Exception("Aynı isimde programlama dili eklenemez!");
-				}
-			}
-			languageRepository.add(language);
-		} else {
-			throw new Exception("Programlama dili boş geçilemez!");
+		List<Language> languages = languageRepository.findAll();
+		List<GetAllLanguageResponse> languageResponses = new ArrayList<>();
+		for (Language language : languages) {
+			GetAllLanguageResponse response = new GetAllLanguageResponse();
+			response.setName(language.getLanguageName());
+			
+			languageResponses.add(response);
 		}
+		return languageResponses;
+	}
 
+
+	@Override
+	public GetByIdLanguageResponse getById(int id) {
+
+		Language language = languageRepository.findById(id).get();
+		GetByIdLanguageResponse response = new GetByIdLanguageResponse();
+		response.setName(language.getLanguageName());
+		return response;
 	}
 
 	@Override
-	public void update(Language language) throws Exception {
-		for (Language lan : languageRepository.getAll()) {
-			if (lan.getName().equalsIgnoreCase(language.getName())) {
-				throw new Exception("Bu isimde bir programlama dili zaten mevcut");
-			}
+	public void add(CreateLanguageRequest createLanguageRequest) {
+		if(languageExistValidator(createLanguageRequest) && languageNameValidator(createLanguageRequest)){
+            Language language = new Language();
 
+            language.setLanguageName(createLanguageRequest.getName());
+
+            languageRepository.save(language);
+
+        }
+		
+	}
+
+	@Override
+	public void update(int id, UpdateLanguageRequest updateLanguageRequest) {
+		if(!updateLanguageRequest.getName().isEmpty()){
+            Language language = languageRepository.findById(id).get();
+            language.setLanguageName(updateLanguageRequest.getName());
+            languageRepository.save(language);
+        }
+		
+	}
+
+	@Override
+	public void delete(DeleteLanguageRequest deleteLanguageRequest) {
+		languageRepository.deleteById(deleteLanguageRequest.getId());
+		
+	}
+	
+	public boolean languageNameValidator(CreateLanguageRequest createLanguageRequest) {
+		if(createLanguageRequest.getName().isEmpty()) {
+			System.out.println("Programlama dili ismi boş geçilemez.");
 		}
-
-		languageRepository.update(language);
-
+		return !createLanguageRequest.getName().isEmpty();
 	}
+	
+	public boolean languageExistValidator(CreateLanguageRequest createLanguageRequest) {
 
-	@Override
-	public void delete(int id) throws Exception {
-		for (Language lan : languageRepository.getAll()) {
-			if (lan.getId() == id) {
-				languageRepository.delete(id);
-			}
-		}
+        for (Language tempLanguage : languageRepository.findAll()) {
+            if (tempLanguage.getLanguageName().equalsIgnoreCase(createLanguageRequest.getName())) {
 
-	}
+                System.out.println("Programlama dili zaten mevcut");
+                return false;
 
-	@Override
-	public Language getById(int id) {
+            }
+        }
 
-		return languageRepository.getById(id);
-	}
+        return true;
+
+    }
 
 }
